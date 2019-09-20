@@ -1,0 +1,6 @@
+/Users/dchen/tools/spsir/build/CMakeFiles/rebuild_cache.dir
+/Users/dchen/tools/spsir/build/CMakeFiles/edit_cache.dir
+/Users/dchen/tools/spsir/build/CMakeFiles/intrinsics_gen.dir
+/Users/dchen/tools/spsir/build/src/CMakeFiles/rebuild_cache.dir
+/Users/dchen/tools/spsir/build/src/CMakeFiles/edit_cache.dir
+/Users/dchen/tools/spsir/build/src/CMakeFiles/spsIR.dir
