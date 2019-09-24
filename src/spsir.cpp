@@ -3,47 +3,58 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
-//#include "llvm/PassRegistry.h"
-//#include "llvm/Support/CommandLine.h"
-
+#include "llvm/Analysis/LoopInfo.h"
+#include "fstream"
+#include "ExprsToSample.hpp"
 
 using namespace llvm;
 
-//static cl::opt<bool>
-//EnableSPSIR("enable-spsir", cl::Hidden,
-//                   cl::desc("Enable SPS IR pass"),
-//                   cl::init(false));
-
 namespace {
-    struct spsIR : public FunctionPass {
+    struct SPSIR : public FunctionPass {
         static char ID;
-        spsIR() : FunctionPass(ID) {}
+        SPSIR() : FunctionPass(ID) {}
 
         /* Analysis pass main function */
-        virtual bool runOnFunction(Function &F) override {
+        bool runOnFunction(Function &F) override {
+            errs() << " /* Analyze function ";
+            errs() << F.getName() << " : ";
 
-            errs() << " /* Analyze function: ";
-            errs() << F.getName() << " */ \n";
+			LoopInfo &LI = getAnalysis<LoopInfoWrapperPass>().getLoopInfo();
+			int loopCnt = 0;
+			for (auto it = LI.begin(), eit = LI.end(); it != eit; ++it) {
+				(*it)->dump();
+				loopCnt += 1;
+
+				Loop* curLoop = (*it);
+				std::map<Instruction*, ExprNode*> exprsToSample = FindExprsToSample(curLoop);
+				DumpExprsToSample(exprsToSample);
+				for (auto expr_it = exprsToSample.begin(), expr_eit = exprsToSample.end(); expr_it != expr_eit; ++expr_it) {
+					for (int i = 0; i < 10; i++) {
+						errs() << sampleValueFromExpr((*expr_it).second) << " ";
+					}
+					errs() << "\n";
+				}
+			}
+			errs() << " Num of Loops : " << loopCnt << "\n";
 
             return false;
         }
 
-        //void getAnalysisUsage(AnalysisUsage &AU) const override {
-        //    AU.setPreservesAll();
-        //}
+		void getAnalysisUsage(AnalysisUsage &AU) const override {
+        	AU.setPreservesAll();
+        	AU.addRequired<LoopInfoWrapperPass>();
+        	return;
+    	}
     };
 }
 
-char spsIR::ID = 0;
-//static RegisterPass<spsIR> X("spsir", "Static Parallel Sampling IR-level Pass", false, false);
+char SPSIR::ID = 0;
+static RegisterPass<SPSIR> X("spsir", "Static Parallel Sampling in IR level Pass",
+                             false /* Only looks at CFG */,
+                             false /* Analysis Pass */);
 
-static void registerSpsIR(const PassManagerBuilder &, legacy::PassManagerBase &PM) {
-// 	if (EnableSPSIR)
-		PM.add(new spsIR());
-}
-
-static RegisterStandardPasses X(PassManagerBuilder::EP_EarlyAsPossible, registerSpsIR);
-//static RegisterStandardPasses clangtoolLoader_O0(PassManagerBuilder::EP_EnabledOnOptLevel0, loadPass);
-
-
+static RegisterStandardPasses Y(
+    PassManagerBuilder::EP_EarlyAsPossible,
+    [](const PassManagerBuilder &Builder,
+       legacy::PassManagerBase &PM) { PM.add(new SPSIR()); });
 
