@@ -44,10 +44,20 @@ ExprNode* ConstructExprTree(Instruction* pInst) {
 	else if (isa<GetElementPtrInst>(pInst)) {
 		assert(pInst->getNumOperands() > 1);
 		if (pInst->getNumOperands() == 3) {
-			Instruction *baseInst = dyn_cast<Instruction>(pInst->getOperand(1));
-        	Instruction *idxInst = dyn_cast<Instruction>(pInst->getOperand(2));
-			node->left = ConstructExprTree(baseInst);
-        	node->right = ConstructExprTree(idxInst);
+			if (isa<Instruction>(pInst->getOperand(1))) {
+				Instruction *baseInst = dyn_cast<Instruction>(pInst->getOperand(1));
+				node->left = ConstructExprTree(baseInst);
+			} else if (isa<Constant>(pInst->getOperand(1))) {
+				Constant *constValue = dyn_cast<Constant>(pInst->getOperand(1));
+				node->leftVal = constValue->getUniqueInteger().getLimitedValue();
+			}
+			if (isa<Instruction>(pInst->getOperand(2))) {
+				Instruction *idxInst = dyn_cast<Instruction>(pInst->getOperand(2));
+            	node->right = ConstructExprTree(idxInst);
+			} else if (isa<Constant>(pInst->getOperand(2))) {
+				Constant *constValue = dyn_cast<Constant>(pInst->getOperand(2));
+                node->rightVal = constValue->getUniqueInteger().getLimitedValue();
+			}
 		} else {
 			Instruction *idxInst = dyn_cast<Instruction>(pInst->getOperand(1));
 			node->left = ConstructExprTree(idxInst);

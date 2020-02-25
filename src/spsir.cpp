@@ -18,13 +18,13 @@ namespace {
         bool runOnFunction(Function &F) override {
             errs() << " /* Analyze function ";
             errs() << F.getName() << " : ";
-
+			
 			LoopInfo &LI = getAnalysis<LoopInfoWrapperPass>().getLoopInfo();
 			int loopCnt = 0;
 			for (auto it = LI.begin(), eit = LI.end(); it != eit; ++it) {
 				(*it)->dump();
 				loopCnt += 1;
-
+                
 				Loop* curLoop = (*it);
 				std::map<Instruction*, ExprNode*> exprsToSample = FindExprsToSample(curLoop);
 				DumpExprsToSample(exprsToSample);
@@ -34,9 +34,11 @@ namespace {
 					}
 					errs() << "\n";
 				}
+                
 			}
 			errs() << " Num of Loops : " << loopCnt << "\n";
 
+            errs() << " */\n";
             return false;
         }
 

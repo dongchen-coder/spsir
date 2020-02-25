@@ -10,8 +10,8 @@ set(CMAKE_CXX_COMPILER_ID "Clang")
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
-  "/Users/dchen/tools/llvm-8.0.0/include"
-  "/Users/dchen/tools/llvm-8.0.0/build/include"
+  "/Users/dchen/tools/llvm-9.0.0/include"
+  "/Users/dchen/tools/llvm-9.0.0/build/include"
   )
 
 # Targets to which this target links.
